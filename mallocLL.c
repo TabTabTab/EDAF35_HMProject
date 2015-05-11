@@ -1,5 +1,6 @@
 #include "mallocLL.h"
 
+#include <pthread.h>
 
 #include <stddef.h>
 #include <errno.h>
@@ -8,9 +9,22 @@
 #include <unistd.h>
 
 
-
+#include  <sys/types.h>
 
 static bnode_t* current_head=NULL;
+pthread_mutex_t alloc_mutex;
+
+
+void lock_alloc()
+{
+	pthread_mutex_lock (&alloc_mutex);
+}
+void unlock_alloc()
+{
+	pthread_mutex_unlock (&alloc_mutex);
+
+   	//pthread_exit((void*) 0);
+}
 
 void free(void* ptr)
 {
@@ -18,25 +32,31 @@ void free(void* ptr)
 	if(ptr==NULL){
 		return;
 	}
+	lock_alloc();
+
 	bnode_t* bnode=get_bnode(ptr);
 	bnode->is_free=true;
 	merge_bnode(bnode);
+
+	unlock_alloc();
 }
 
 void* malloc(size_t size)
 {
 	printf("calling custom function: %s\n", __FUNCTION__);
-	
+	lock_alloc();
 	bnode_t* bnode = find_bnode(size);
 	if(bnode==NULL){
+		unlock_alloc();
 		return NULL;
 	}
 	//split the node if too large
 	split_bnode(bnode,size);
 
 	bnode->is_free=false;
-
-	return get_data_ptr(bnode);
+	void* data=get_data_ptr(bnode);
+	unlock_alloc();
+	return data;
 }
 
 void* calloc(size_t nitems, size_t size)
@@ -56,43 +76,47 @@ void* realloc(void *ptr, size_t size)
 	if(ptr==NULL){
 		return malloc(size);
 	}
+	lock_alloc();
 	bnode_t* current=get_bnode(ptr);
 	size_t prev_size=current->size;
 
 	if(current->size >size){
 		//we don't need to work, but we may be able to split
-		return split_and_get_data(current,size);
+		return split_get_data_unlock(current,size);
 	}
 
 	//try to expand the current node to the right(in that case no data needs to move)
 	current=merge_bnode_right(current);
 	if(current->size >size){
 		//we don't need to work, but we may be able to split
-		return split_and_get_data(current,size);
+		return split_get_data_unlock(current,size);
 	}
 	//try to expand the current node to the left(in that case data needs to move)
 	current=merge_bnode_left(current);
 	if(current->size >size){
 		//we don't need to work, but we may be able to split
 		memcpy(get_data_ptr(current), ptr, prev_size);
-		return split_and_get_data(current,size);
+		return split_get_data_unlock(current,size);
 	}
 	//in case nothing worked we need to allocate new memory
+	unlock_alloc();
 	void* new_data=malloc(size);
 	if(new_data==NULL){
 		return NULL;
 	}
 	memcpy(new_data, ptr, prev_size);
+
 	free(get_data_ptr(current));
 	return new_data;
 
-
 }
 
-void* split_and_get_data(bnode_t* bnode, size_t size)
+void* split_get_data_unlock(bnode_t* bnode, size_t size)
 {
 	split_bnode(bnode,size);
-	return get_data_ptr(bnode);
+	void* data=get_data_ptr(bnode);
+	unlock_alloc();
+	return data;
 }
 
 bnode_t* find_bnode(size_t size)
@@ -234,12 +258,23 @@ bnode_t* get_bnode(void* data_ptr)
 
 int main()
 {
-	printf("hello\n");
+	fork();
+	fork();
+	fork();
+	fork();
+	pid_t pid = getpid();
+	printf("hello from %u==============================\n",pid);
 	unsigned* mem=(unsigned*)malloc(sizeof (unsigned));
 	*mem=2;
 	unsigned* mem2=(unsigned*)malloc(sizeof (unsigned));
 	*mem2=21;
 	void* mem3=malloc(100);
+	int i=0;
+	while(i<100){
+		printf("");
+		i++;
+	}
+	printf("\n");
 	printf("mem %u\n",mem);
 	printf("mem2 %u\n",mem2);
 	printf("mem3 %u\n",mem3);
@@ -250,7 +285,7 @@ int main()
 	printf("mem %u\n",mem);
 	printf("mem2 %u\n",*mem2);
 	printf("mem3 %u\n",mem3);
-	printf("finished\n");
+	printf("finished from %u==============\n",pid);
 
 	free(mem);
 	free(mem2);

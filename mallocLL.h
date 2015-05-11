@@ -33,6 +33,9 @@ bnode_t* merge_bnode(bnode_t* bnode);
 bnode_t* merge_bnode_right(bnode_t* bnode);
 bnode_t* merge_bnode_left(bnode_t* bnode);
 
+
+void lock_alloc();
+void unlock_alloc();
 /**
 lets the node beleive its the only node in the world, does not modify size
 **/
@@ -40,7 +43,7 @@ void virginate_bnode(bnode_t* bnode);
 void register_node(bnode_t* bnode);
 void insert_node(bnode_t* bnode, bnode_t* pred_bnode, bnode_t* succ_bnode);
 void* get_data_ptr(bnode_t* bnode);
-void* split_and_get_data(bnode_t* bnode,size_t size);
+void* split_get_data_unlock(bnode_t* bnode,size_t size);
 
 bool are_neighbours(bnode_t* potential_left, bnode_t* potential_right);
 
