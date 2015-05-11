@@ -27,9 +27,9 @@ block_t* split_block(block_t* block,size_t req_kval)
 	char* byte_ptr=(char*)block;
 	while(current_kval > req_kval){
 		current_kval--;
-		
+		///NOT DONE YET! 11/5-2015
 		block_t* right_half=(block_t*)(byte_ptr + two_to_pow(current_kval));
-		
+
 	}
 }
 size_t two_to_pow(size_t pow)
