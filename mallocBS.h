@@ -10,8 +10,9 @@
 
 
 #define N (23)
-#define POOL_SIZE (8*1024*1024)
+#define POOL_SIZE (1<<N)		//(8*1024*1024)
 
+#define SBRK_FAIL ((void*) -1)
 
 typedef struct block_t block_t;
 
@@ -23,6 +24,7 @@ struct block_t{
 };
 
 #define BLOCK_SIZE (sizeof(block_t))
+
 block_t* find_free_block(size_t size);
 
 
