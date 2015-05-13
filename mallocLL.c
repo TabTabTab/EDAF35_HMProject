@@ -44,6 +44,7 @@ void free(void* ptr)
 void* malloc(size_t size)
 {
 	printf("calling custom function: %s\n", __FUNCTION__);
+	size=aligned_size(size);
 	lock_alloc();
 	bnode_t* bnode = find_bnode(size);
 	if(bnode==NULL){
@@ -62,6 +63,7 @@ void* malloc(size_t size)
 void* calloc(size_t nitems, size_t size)
 {
 	printf("calling custom function: %s\n", __FUNCTION__);
+	size=aligned_size(size);
 	size_t tot_size=nitems*size;
 	void* data=malloc(tot_size);
 	if(data!=NULL){
@@ -73,6 +75,7 @@ void* calloc(size_t nitems, size_t size)
 void* realloc(void *ptr, size_t size)
 {
 	printf("calling custom function: %s\n", __FUNCTION__);
+	size=aligned_size(size);
 	if(ptr==NULL){
 		return malloc(size);
 	}
@@ -150,6 +153,12 @@ bnode_t* find_bnode(size_t size)
 	return new_node;
 }
 
+size_t aligned_size(size_t data_size)
+{
+	size_t aligned_size=(((data_size-1)>>3)<<3)+8;
+	return aligned_size;
+}
+
 bnode_t* create_bnode(size_t size)
 {
 	void* request = sbrk(BNODE_SIZE+size);
@@ -202,7 +211,7 @@ bool are_neighbours(bnode_t* potential_left, bnode_t* potential_right)
 
 void split_bnode(bnode_t* bnode,size_t required_size)
 {
-	size_t split_treshold=required_size+BNODE_SIZE+MINIMUM_DATA_SIZE;
+	size_t split_treshold=aligned_size(required_size+BNODE_SIZE+MINIMUM_DATA_SIZE);
 
 	if(bnode->size < split_treshold){
 		return;
@@ -258,12 +267,9 @@ bnode_t* get_bnode(void* data_ptr)
 
 int main()
 {
-	fork();
-	fork();
-	fork();
-	fork();
-	pid_t pid = getpid();
-	printf("hello from %u==============================\n",pid);
+	printf("alsize %d\n",aligned_size(14));
+
+	//return 0;
 	unsigned* mem=(unsigned*)malloc(sizeof (unsigned));
 	*mem=2;
 	unsigned* mem2=(unsigned*)malloc(sizeof (unsigned));
@@ -285,7 +291,6 @@ int main()
 	printf("mem %u\n",mem);
 	printf("mem2 %u\n",*mem2);
 	printf("mem3 %u\n",mem3);
-	printf("finished from %u==============\n",pid);
 
 	free(mem);
 	free(mem2);

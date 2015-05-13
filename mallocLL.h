@@ -17,8 +17,11 @@ struct bnode_t{
 	bnode_t* prev;
 	bool is_free;
 };
+
+
 #define BNODE_SIZE (sizeof (bnode_t))
 #define MINIMUM_DATA_SIZE (4)
+
 
 bnode_t* find_bnode(size_t size);
 bnode_t* create_bnode(size_t size);
@@ -33,6 +36,7 @@ bnode_t* merge_bnode(bnode_t* bnode);
 bnode_t* merge_bnode_right(bnode_t* bnode);
 bnode_t* merge_bnode_left(bnode_t* bnode);
 
+size_t aligned_size(size_t data_size);
 
 void lock_alloc();
 void unlock_alloc();
