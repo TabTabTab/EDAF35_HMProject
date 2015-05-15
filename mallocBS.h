@@ -42,5 +42,6 @@ size_t align_size(size_t size);
 block_t* merge_block(block_t* block);
 block_t* split_block(block_t* block,size_t req_kval);
 block_t* concatonate_block(block_t* block_1,block_t* block_2);
+block_t* get_block(void* data_ptr);
 void add_to_free_list(block_t* block);
 void remove_from_free_list(block_t* block);
