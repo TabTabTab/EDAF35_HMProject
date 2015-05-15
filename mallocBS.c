@@ -12,16 +12,20 @@ void* malloc(size_t size)
 {
 	if(memory_pool!=NULL){
 		size_t tot_size=align_size(size+BLOCK_SIZE);
+		printf("needed size not allig: %zd\n",size+BLOCK_SIZE);
 		block_t* block=find_free_block(tot_size);
 
 		if(block==NULL){
+			printf("NULL0\n");
 			return NULL;
 		}
 		block->reserved=true;
 		return (void*)(block+1);
 	}else{
+		printf("initiating\n");
 		void* pool = sbrk(POOL_SIZE);
 		if (pool==SBRK_FAIL){
+			printf("NULL1\n");
 			return NULL;
 		}
 		memory_pool=(char*)pool;
@@ -55,9 +59,11 @@ block_t* find_free_block(size_t size)
 	size_t req_kval=two_exp(size);
 	block_t* block=NULL;
 	size_t index=req_kval;
-	while(index<N){
-		if(free_list[index]!=NULL){
-			block_t* avail_block=free_list[index];
+	while(index<=N){
+		printf("checking%zu\n",index);
+		if(free_list[index-1]!=NULL){
+			printf("we found one\n");
+			block_t* avail_block=free_list[index-1];
 			remove_from_free_list(avail_block);
 			return split_block(avail_block,req_kval);
 		}
@@ -89,12 +95,16 @@ block_t* merge_block(block_t* block)
 	if(current_kval==N){
 		return block;
 	}
-
-	block_t* buddy = (block_t*)(memory_pool + ( ( ((char*)block) - memory_pool) ^ (1 << block->kval) ) );
+	block_t* buddy = (block_t*)(memory_pool + ( ( ((char*)block) - memory_pool) ^ (1 << current_kval) ) );
 	while(buddy!=NULL && !buddy->reserved){
 		remove_from_free_list(buddy);
 		block=concatonate_block(block,buddy);
-		buddy = (block_t*)(memory_pool + ( ( ((char*)block) - memory_pool) ^ (1 << block->kval) ) );
+		current_kval=block->kval;
+		if(current_kval==N){
+			buddy=NULL;
+		}else{
+			buddy = (block_t*)(memory_pool + ( ( ((char*)block) - memory_pool) ^ (1 << current_kval) ) );
+		}
 	}
 	return block;
 }
@@ -165,22 +175,21 @@ size_t two_exp(size_t value)
 	return (nones>1) ? nbits : nbits-1;
 }
 void dummy(){
-
+	printf("dummy\n");
 }
 int main()
 {
-	size_t n=4;
-	printf("%zd\n",two_exp(n));
 	void* mem1=malloc(10);
 	void* mem2=malloc(10);
 
-	printf("mem1 %u\n",mem1);
-	printf("mem2 %u\n",mem2);
+	printf("mem1 %p\n",mem1);
+	printf("mem2 %p\n",mem2);
+	printf("diff= %zu\n",mem2-mem1);
 	free(mem1);
 
 	void* mem3=malloc(10);
 	free(mem2);
 	dummy();
 	free(mem3);
-	printf("mem3 %u\n",mem3);
+	printf("mem3 %p\n",mem3);
 }
