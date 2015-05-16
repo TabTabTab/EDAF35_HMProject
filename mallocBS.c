@@ -121,8 +121,11 @@ block_t* merge_block(block_t* block)
 	if(current_kval==N){
 		return block;
 	}
+
 	block_t* buddy = (block_t*)(memory_pool + ( ( ((char*)block) - memory_pool) ^ (1 << current_kval) ) );
-	while(buddy!=NULL && !buddy->reserved){
+
+
+	while(buddy!=NULL && !buddy->reserved && buddy->kval==current_kval){
 		remove_from_free_list(buddy);
 		block=concatonate_block(block,buddy);
 		current_kval=block->kval;
@@ -204,7 +207,7 @@ size_t two_exp(size_t value)
 block_t* get_block(void* data_ptr)
 {
 	block_t* block=((block_t*)data_ptr)-1;
-	//return block;
+	return block;
 }
 int dummy()
 {
