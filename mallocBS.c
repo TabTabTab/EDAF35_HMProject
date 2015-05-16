@@ -35,8 +35,8 @@ void* realloc(void* ptr, size_t size)
 	if(new_ptr!=NULL){
 		size_t old_mem_size=two_to_pow(block->kval)-BLOCK_SIZE;
 		memcpy(new_ptr, ptr, old_mem_size);
+		free(ptr);
 	}
-	free(ptr);
 	return new_ptr;
 }
 
@@ -179,6 +179,7 @@ void remove_from_free_list(block_t* block)
 size_t align_size(size_t size)
 {
 	size_t a_size=two_to_pow(two_exp(size));
+	return a_size;
 }
 size_t two_to_pow(size_t pow)
 {
@@ -203,9 +204,37 @@ size_t two_exp(size_t value)
 block_t* get_block(void* data_ptr)
 {
 	block_t* block=((block_t*)data_ptr)-1;
+	//return block;
 }
-int main()
+int dummy()
 {
+	int i=1;
+}
+
+void shan()
+{
+	void* p = malloc(10);
+	int t = 10;
+	printf(" %d\n", t);
+	free(p);
+
+	printf("malloc done\n");
+	p = calloc(2,10);
+	free(p);
+	printf("calloc done\n");
+	p = realloc(NULL,5);
+	free(p);
+	printf("realloc as malloc done\n");
+	p = malloc(10);
+	printf(" malloc done\n");
+	p = realloc(p,8);
+	printf("realloc done\n");
+	free(p);
+	printf("realloc smaller size  done\n");
+	p = malloc(10);
+	p = realloc(p,64);
+	free(p);
+	printf("realloc bigger size  done\n");
 	void* mem1=malloc(10);
 	void* mem2=malloc(10);
 
@@ -221,4 +250,34 @@ int main()
 
 	mem3=calloc(1,200);
 	mem3=realloc(mem3,1000);
+}
+void maxMem()
+{
+	size_t max=(1<<N-1)-BLOCK_SIZE;
+	size_t max2=(1<<N-1)-BLOCK_SIZE;
+
+	void* mem1=malloc(max);
+
+	printf("maxMem %p\n",mem1);
+
+	mem1=malloc(max+4);
+
+	printf("maxMem %p\n",mem1);
+	free(mem1);
+
+
+	mem1=malloc(max);
+
+	printf("maxMem %p\n",mem1);
+
+}
+
+int main()
+{
+	maxMem();
+	printf("%d\n",dummy());
+	//shan();
+	void* mem1=malloc(10);
+	printf("maxMem %p\n",((block_t*)10)-1);
+	printf("maxMem %p\n",get_block(10));
 }
