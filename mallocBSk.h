@@ -25,7 +25,6 @@ struct block_t{
 
 #define BLOCK_SIZE (sizeof(block_t))
 
-block_t* find_free_block(size_t size);
 
 
 
@@ -36,6 +35,7 @@ void free(void* ptr);
 
 
 //private 
+block_t* find_free_block(size_t k_val);
 size_t two_exp(size_t value);
 size_t two_to_pow(size_t pow);
 size_t align_size(size_t size);

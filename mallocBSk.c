@@ -1,7 +1,7 @@
-#include "mallocBS.h"
+#include "mallocBSk.h"
 
 
-
+//A Malloc with less size and more k
 
 static block_t* free_list[N];
 static char* memory_pool=NULL; //[POOL_SIZE];
@@ -66,8 +66,8 @@ void* realloc(void* ptr, size_t size)
 void* malloc(size_t size)
 {
 	if(memory_pool!=NULL){
-		size_t tot_size=align_size(size+BLOCK_SIZE);
-		block_t* block=find_free_block(tot_size);
+		size_t k_val=two_exp(size+BLOCK_SIZE);
+		block_t* block=find_free_block(k_val);
 
 		if(block==NULL){
 			return NULL;
@@ -105,9 +105,8 @@ void free(void* ptr)
 	add_to_free_list(block);
 }
 
-block_t* find_free_block(size_t size)
+block_t* find_free_block(size_t req_kval)
 {
-	size_t req_kval=two_exp(size);
 	block_t* block=NULL;
 	size_t index=req_kval;
 	while(index<=N){
@@ -255,11 +254,12 @@ int main()
 	size_t sh=POOL_SIZE/2;
 	printf("%zu, %zu\n",s,sh);
 	*/
-	p=malloc(POOL_SIZE/2);
+	p=malloc(POOL_SIZE/2-BLOCK_SIZE);
 	printf("addr1: %p\n",p);
-	p=realloc(p,POOL_SIZE/2);
+	p=realloc(p,POOL_SIZE/2-300);
 	printf("addr2: %p\n",p);
 	size_t size=10;
+	malloc(2);
 	void* mem1=malloc(size*=3);
 	printf("addr: %p\n",mem1);
 	mem1=realloc(mem1,size*=3);
