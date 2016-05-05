@@ -137,7 +137,7 @@ bnode_t* find_bnode(size_t size)
 
 	bnode_t* start_node=current_head;
 	do{
-		if(current_head->is_free && 
+		if(current_head->is_free &&
 			current_head->size >= size){
 			return current_head;
 		}
@@ -248,7 +248,7 @@ void insert_node(bnode_t* bnode, bnode_t* pred_bnode, bnode_t* succ_bnode)
 {
 	//inform neighbours
 	pred_bnode->next=bnode;
-	succ_bnode->prev=bnode;	
+	succ_bnode->prev=bnode;
 
 	//inform self
 	bnode->next=succ_bnode;
@@ -264,7 +264,7 @@ bnode_t* get_bnode(void* data_ptr)
 	bnode_t* bnode=((bnode_t*)data_ptr)-1;
 	return bnode;
 }
-
+/*
 int main()
 {
 	printf("alsize %d\n",aligned_size(14));
@@ -296,3 +296,4 @@ int main()
 	free(mem2);
 	free(mem3);
 }
+*/

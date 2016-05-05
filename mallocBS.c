@@ -35,13 +35,13 @@ void* realloc(void* ptr, size_t size)
 	//we need to store this in case we need to memcpy
 	size_t old_mem_size=two_to_pow(block->kval)-BLOCK_SIZE;
 
-	//check if we can expand to the right 
+	//check if we can expand to the right
 	bool block_big_enough=false;
 	while(!block_big_enough){
 
 
 	block_t* buddy=find_buddy(block);
-	if(buddy!=NULL && buddy > block && !buddy->reserved 
+	if(buddy!=NULL && buddy > block && !buddy->reserved
 		&& buddy->kval==block->kval){
 		block=concatonate_block(block,buddy);
 		remove_from_free_list(buddy);
@@ -224,7 +224,7 @@ size_t two_to_pow(size_t pow)
 size_t two_exp(size_t value)
 {
 	size_t ONE=0x1;
-	
+
 	size_t nbits=0;
 	size_t nones=0;
 
@@ -244,17 +244,15 @@ block_t* get_block(void* data_ptr)
 }
 
 
-
+/*
 int main()
 {
 	void* p;
-	/*
-	p = malloc(POOL_SIZE-BLOCK_SIZE+0);
-	printf("addr: %p\n",p);
-	size_t s=POOL_SIZE;
-	size_t sh=POOL_SIZE/2;
-	printf("%zu, %zu\n",s,sh);
-	*/
+	//p = malloc(POOL_SIZE-BLOCK_SIZE+0);
+	//printf("addr: %p\n",p);
+	//size_t s=POOL_SIZE;
+	//size_t sh=POOL_SIZE/2;
+	//printf("%zu, %zu\n",s,sh);
 	p=malloc(POOL_SIZE/2);
 	printf("addr1: %p\n",p);
 	p=realloc(p,POOL_SIZE/2);
@@ -267,3 +265,4 @@ int main()
 	mem1=realloc(mem1,size*=3);
 	printf("addr: %p\n",mem1);
 }
+*/

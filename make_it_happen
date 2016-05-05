@@ -1,0 +1,53 @@
+#!/bin/bash
+
+BOLD='\033[1m'
+NONE='\033[00m'
+
+function clean {
+    echo "cleaning.."
+    (cd gawk-4.1.3 && make clean)
+}
+
+function reset {
+    echo "reset"
+    echo "removing old malloc files"
+    rm gawk-4.1.3/mallocLL.*
+    rm gawk-4.1.3/mallocBS.*
+    cp gawk_makes/MakefileOrig gawk-4.1.3/Makefile
+    clean
+}
+
+function test_it {
+    echo "testing system.."
+    (cd gawk-4.1.3 && make check)
+}
+
+if [ "$#" -eq 1 ]
+then
+    if [ $1 = "reset" ]
+    then
+        reset
+        test_it
+    fi
+    if [ $1 = "LL" ]
+    then
+        echo "LL"
+        reset
+        cp mallocLL.c gawk-4.1.3/
+        cp mallocLL.h gawk-4.1.3/
+        cp gawk_makes/MakefileLL gawk-4.1.3/Makefile
+        test_it
+    fi
+    if [ $1 = "BS" ]
+    then
+        echo "BS"
+        reset
+        cp mallocBS.c gawk-4.1.3/
+        cp mallocBS.h gawk-4.1.3/
+        cp gawk_makes/MakefileBS gawk-4.1.3/Makefile
+        test_it
+    fi
+else
+	echo -e " failed. fix: supply exactly one argument"
+fi
+#cp gawk_makes/ gawk-4.1.3
