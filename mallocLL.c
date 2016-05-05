@@ -11,24 +11,35 @@
 
 #include  <sys/types.h>
 
+//#define PLAYING
+//#define DO_PRINT
+
+#ifdef DO_PRINT
+	#define FAKE_PRINT(...) printf(__VA_ARGS__)
+#else
+	#define FAKE_PRINT(...) 1+1
+#endif
+
+
 static bnode_t* current_head=NULL;
 pthread_mutex_t alloc_mutex;
 
 
 void lock_alloc()
 {
-	pthread_mutex_lock (&alloc_mutex);
+	//pthread_mutex_lock (&alloc_mutex);
 }
+
 void unlock_alloc()
 {
-	pthread_mutex_unlock (&alloc_mutex);
+	//pthread_mutex_unlock (&alloc_mutex);
 
    	//pthread_exit((void*) 0);
 }
 
 void free(void* ptr)
 {
-	printf("calling custom function: %s\n", __FUNCTION__);
+	FAKE_PRINT("calling custom function: %s\n", __FUNCTION__);
 	if(ptr==NULL){
 		return;
 	}
@@ -36,14 +47,15 @@ void free(void* ptr)
 
 	bnode_t* bnode=get_bnode(ptr);
 	bnode->is_free=true;
-	merge_bnode(bnode);
+	//merge_bnode(bnode);
 
 	unlock_alloc();
 }
 
 void* malloc(size_t size)
 {
-	printf("calling custom function: %s\n", __FUNCTION__);
+	//return NULL;
+	FAKE_PRINT("calling custom function: %s\n", __FUNCTION__);
 	size=aligned_size(size);
 	lock_alloc();
 	bnode_t* bnode = find_bnode(size);
@@ -52,7 +64,7 @@ void* malloc(size_t size)
 		return NULL;
 	}
 	//split the node if too large
-	split_bnode(bnode,size);
+	//split_bnode(bnode,size);
 
 	bnode->is_free=false;
 	void* data=get_data_ptr(bnode);
@@ -62,7 +74,7 @@ void* malloc(size_t size)
 
 void* calloc(size_t nitems, size_t size)
 {
-	printf("calling custom function: %s\n", __FUNCTION__);
+	FAKE_PRINT("calling custom function: %s\n", __FUNCTION__);
 	size=aligned_size(size);
 	size_t tot_size=nitems*size;
 	void* data=malloc(tot_size);
@@ -74,7 +86,7 @@ void* calloc(size_t nitems, size_t size)
 
 void* realloc(void *ptr, size_t size)
 {
-	printf("calling custom function: %s\n", __FUNCTION__);
+	FAKE_PRINT("calling custom function: %s\n", __FUNCTION__);
 	size=aligned_size(size);
 	if(ptr==NULL){
 		return malloc(size);
@@ -89,18 +101,18 @@ void* realloc(void *ptr, size_t size)
 	}
 
 	//try to expand the current node to the right(in that case no data needs to move)
-	current=merge_bnode_right(current);
-	if(current->size >size){
+	//current=merge_bnode_right(current);
+	//if(current->size > size){
 		//we don't need to work, but we may be able to split
-		return split_get_data_unlock(current,size);
-	}
+	//	return split_get_data_unlock(current,size);
+	//}
 	//try to expand the current node to the left(in that case data needs to move)
-	current=merge_bnode_left(current);
-	if(current->size >size){
+	//current=merge_bnode_left(current);
+	//if(current->size >size){
 		//we don't need to work, but we may be able to split
-		memcpy(get_data_ptr(current), ptr, prev_size);
-		return split_get_data_unlock(current,size);
-	}
+	//	memcpy(get_data_ptr(current), ptr, prev_size);
+	//	return split_get_data_unlock(current,size);
+	//}
 	//in case nothing worked we need to allocate new memory
 	unlock_alloc();
 	void* new_data=malloc(size);
@@ -116,7 +128,7 @@ void* realloc(void *ptr, size_t size)
 
 void* split_get_data_unlock(bnode_t* bnode, size_t size)
 {
-	split_bnode(bnode,size);
+	//split_bnode(bnode,size);
 	void* data=get_data_ptr(bnode);
 	unlock_alloc();
 	return data;
@@ -170,8 +182,10 @@ bnode_t* create_bnode(size_t size)
 	return new_bnode;
 }
 
+/*
 bnode_t* merge_bnode(bnode_t* bnode)
 {
+	return bnode;
 	bnode_t* pred=bnode->prev;
 	bnode=merge_bnode_left(bnode);
 	bnode=merge_bnode_right(bnode);
@@ -188,6 +202,7 @@ bnode_t* merge_bnode_left(bnode_t* bnode)
 	}
 	return bnode;
 }
+
 bnode_t* merge_bnode_right(bnode_t* bnode)
 {
 	bnode_t* right=bnode->next;
@@ -230,6 +245,7 @@ void split_bnode(bnode_t* bnode,size_t required_size)
 
 	insert_node(new_bnode, bnode, bnode->next);
 }
+*/
 void virginate_bnode(bnode_t* bnode)
 {
 	bnode->next=bnode;
@@ -244,6 +260,7 @@ void register_node(bnode_t* new_node)
 
 	insert_node(new_node,pred_bnode,succ_bnode);
 }
+
 void insert_node(bnode_t* bnode, bnode_t* pred_bnode, bnode_t* succ_bnode)
 {
 	//inform neighbours
@@ -254,6 +271,7 @@ void insert_node(bnode_t* bnode, bnode_t* pred_bnode, bnode_t* succ_bnode)
 	bnode->next=succ_bnode;
 	bnode->prev=pred_bnode;
 }
+
 void* get_data_ptr(bnode_t* bnode)
 {
 	return bnode+1;
@@ -264,7 +282,7 @@ bnode_t* get_bnode(void* data_ptr)
 	bnode_t* bnode=((bnode_t*)data_ptr)-1;
 	return bnode;
 }
-/*
+#ifdef PLAYING
 int main()
 {
 	printf("alsize %d\n",aligned_size(14));
@@ -289,11 +307,11 @@ int main()
 	mem=calloc(1,20);
 	mem2=realloc(mem2,100);
 	printf("mem %u\n",mem);
-	printf("mem2 %u\n",*mem2);
+	printf("mem2 %u\n",mem2);
 	printf("mem3 %u\n",mem3);
 
-	free(mem);
-	free(mem2);
-	free(mem3);
+	//free(mem);
+	//free(mem2);
+	//free(mem3);
 }
-*/
+#endif
