@@ -1,6 +1,13 @@
 #include "mallocBS.h"
 
+//#define PLAYING
+//#define DO_PRINT
 
+#ifdef DO_PRINT
+	#define FAKE_PRINT(...) printf(__VA_ARGS__)
+#else
+	#define FAKE_PRINT(...)
+#endif
 
 
 static block_t* free_list[N];
@@ -29,7 +36,6 @@ void* realloc(void* ptr, size_t size)
 		split_block(block,req_kval);
 		//not needed as split always returns the left most block
 		block->reserved=true;
-		printf("hello\n");
 		return ptr;
 	}
 	//we need to store this in case we need to memcpy
