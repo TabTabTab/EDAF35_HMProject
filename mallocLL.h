@@ -38,14 +38,12 @@ bnode_t* merge_bnode_left(bnode_t* bnode);
 
 size_t aligned_size(size_t data_size);
 
-void lock_alloc();
-void unlock_alloc();
 /**
 lets the node beleive its the only node in the world, does not modify size
 **/
-void virginate_bnode(bnode_t* bnode);
+void expel_bnode(bnode_t* bnode);
 void register_node(bnode_t* bnode);
-void insert_node(bnode_t* bnode, bnode_t* pred_bnode, bnode_t* succ_bnode);
+void insert_node(bnode_t* new_bnode, bnode_t* pred_bnode, bnode_t* succ_bnode);
 void* get_data_ptr(bnode_t* bnode);
 void* split_get_data_unlock(bnode_t* bnode,size_t size);
 
